@@ -1,0 +1,156 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  # ------------------------------------------------------------#
+  #  VPC
+  # ------------------------------------------------------------#
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.1.0.0/16
+      Tags:
+      - Key: Name
+        Value: RaiseTech-cf-vpc2
+  # ------------------------------------------------------------#
+  #  Internet Gateway
+  # ------------------------------------------------------------#       
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: RaiseTech-cf-igw
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  # ------------------------------------------------------------#
+  #  Public Subnet
+  # ------------------------------------------------------------#     
+  PubSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.1.0/24
+      AvailabilityZone: "ap-northeast-1a"
+      Tags:
+      - Key: Name
+        Value: RaiseTech-cf-publicsb-1a
+  PubSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.2.0/24
+      AvailabilityZone: "ap-northeast-1c"
+      Tags:
+      - Key: Name
+        Value: RaiseTech-cf-publicsb-1c
+  # ------------------------------------------------------------#
+  #  Private Subnet
+  # ------------------------------------------------------------#     
+  PrvSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.3.0/24
+      AvailabilityZone: "ap-northeast-1a"
+      Tags:
+      - Key: Name
+        Value: RaiseTech-cf-privatesb-1a
+  PrvSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.4.0/24
+      AvailabilityZone: "ap-northeast-1c"
+      Tags:
+      - Key: Name
+        Value: RaiseTech-cf-privatesb-1c
+  # ------------------------------------------------------------#
+  #  Public RouteTable
+  # ------------------------------------------------------------#     
+  PublicRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      Tags:
+      - Key: Name
+        Value: CF-PublicRouteTable
+      VpcId: !Ref VPC
+  # ------------------------------------------------------------#
+  #  Public Routing
+  # ------------------------------------------------------------#
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref InternetGateway
+  # ------------------------------------------------------------#
+  #  Public RouteTable Association
+  # ------------------------------------------------------------#
+  EC2PublicSubnetAttach1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PubSubnet1
+  EC2PublicSubnetAttach2:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PubSubnet2
+  # ------------------------------------------------------------#
+  #  EC2 SecurityGroup
+  # ------------------------------------------------------------#
+  EC2SecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: EC2SecurityGroup
+      GroupName: CF-EC2SecurityGroup
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: "Name"
+          Value: "CF-EC2-SecurityGroup"
+      VpcId: !Ref VPC
+  # ------------------------------------------------------------#
+  #  Ec2 Instance
+  # ------------------------------------------------------------#     
+  EC2Instance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-052652af12b58691f
+      InstanceType: t2.micro
+      KeyName: my-key
+      NetworkInterfaces:
+        - SubnetId: !Ref PubSubnet1
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          AssociatePublicIpAddress: true
+          DeviceIndex : 0
+
+  EC2Instance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-052652af12b58691f
+      InstanceType: t2.micro
+      KeyName: my-key
+      SecurityGroupIds:
+        - !Ref EC2SecurityGroup
+      SubnetId: !Ref PubSubnet2
+  # ------------------------------------------------------------#
+  #  RDS Subnet Group
+  # ------------------------------------------------------------#     
+  RDSSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: CF-SubnetGroup
+      DBSubnetGroupName: RDSSubnetGroup
+      SubnetIds: #required
+        - !Ref PrvSubnet1
+        - !Ref PrvSubnet2
+  # ------------------------------------------------------------#
+  #  RDS DB Instance
+  # ------------------------------------------------------------#     
