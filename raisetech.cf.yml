@@ -142,7 +142,7 @@ Resources:
       IpProtocol: tcp
       FromPort: '3306'
       ToPort: '3306'
-      SourceSecurityGroupId: !Ref RDSSecurityGroup
+      SourceSecurityGroupId: !Ref EC2SecurityGroup
   RDSSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
