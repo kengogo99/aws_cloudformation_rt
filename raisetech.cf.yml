@@ -127,14 +127,6 @@ Resources:
         - Key: "Name"
           Value: "CF-EC2-SecurityGroup"
       VpcId: !Ref VPC
-  WebServerSecurityGroupEgress:
-    Type: 'AWS::EC2::SecurityGroupEgress'
-    Properties:
-      GroupId: !Ref EC2SecurityGroup
-      IpProtocol: tcp
-      FromPort: '3306'
-      ToPort: '3306'
-      SourceSecurityGroupId: !Ref RDSSecurityGroup
   WebServerSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
