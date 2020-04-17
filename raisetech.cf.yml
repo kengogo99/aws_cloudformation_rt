@@ -127,6 +127,24 @@ Resources:
         - Key: "Name"
           Value: "CF-EC2-SecurityGroup"
       VpcId: !Ref VPC
+  WebServerSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref EC2SecurityGroup
+      IpProtocol: tcp
+      FromPort: '3306'
+      ToPort: '3306'
+      SourceSecurityGroupId: !Ref EC2SecurityGroup
+  RDSSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: SecurityGroup rds-grp
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '3306'
+          ToPort: '3306'
+          SourceSecurityGroupId: !Ref EC2SecurityGroup
   # ------------------------------------------------------------#
   #  Ec2 Instance
   # ------------------------------------------------------------#     
@@ -166,3 +184,27 @@ Resources:
   # ------------------------------------------------------------#
   #  RDS DB Instance
   # ------------------------------------------------------------#     
+  DBInstance: 
+    Type: "AWS::RDS::DBInstance"
+    Properties: 
+      DBInstanceIdentifier: cf-raisetech-mysql
+      Engine: MySQL
+      EngineVersion: 5.7.28
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: 20
+      StorageType: IOPS
+      DBName: cf-raisetech_production
+      MasterUsername: admin
+      MasterUserPassword: adminpass
+      DBSubnetGroupName: RDSSubnetGroup
+      PubliclyAccessible: false
+      MultiAZ: true
+      AutoMinorVersionUpgrade: false
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+      CopyTagsToSnapshot: true
+      BackupRetentionPeriod: 0
+      Tags: 
+        - Key: "Name"
+          Value: "cf-raisetech"
+    DeletionPolicy: "Delete"
