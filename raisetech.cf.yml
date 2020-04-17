@@ -168,9 +168,12 @@ Resources:
       ImageId: ami-052652af12b58691f
       InstanceType: t2.micro
       KeyName: my-key
-      SecurityGroupIds:
-        - !Ref EC2SecurityGroup
-      SubnetId: !Ref PubSubnet2
+      NetworkInterfaces:
+        - SubnetId: !Ref PubSubnet2
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          AssociatePublicIpAddress: true
+          DeviceIndex : 0
   # ------------------------------------------------------------#
   #  RDS Subnet Group
   # ------------------------------------------------------------#     
