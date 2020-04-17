@@ -192,11 +192,11 @@ Resources:
       EngineVersion: 5.7.28
       DBInstanceClass: db.t2.micro
       AllocatedStorage: 20
-      StorageType: IOPS
+      StorageType: gp2
       DBName: cfraisetech
       MasterUsername: admin
       MasterUserPassword: adminpass
-      DBSubnetGroupName: RDSSubnetGroup
+      DBSubnetGroupName: !Ref RDSSubnetGroup
       PubliclyAccessible: false
       MultiAZ: true
       AutoMinorVersionUpgrade: false
